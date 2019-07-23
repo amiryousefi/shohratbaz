@@ -26,7 +26,7 @@ const usersRouter = require('./routes/users');
 const privacyRouter = require('./routes/privacy');
 const facebookRouter = require('./routes/facebook');
 
-var app = express();
+const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
