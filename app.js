@@ -21,10 +21,10 @@ const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 // define routers
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var privacyRouter = require('./routes/privacy');
-var facebookRouter = require('./routes/facebook');
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const privacyRouter = require('./routes/privacy');
+const facebookRouter = require('./routes/facebook');
 
 var app = express();
 
