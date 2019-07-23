@@ -7,6 +7,8 @@ const lessMiddleware = require('less-middleware');
 const logger = require('morgan');
 const passport = require('passport');
 const dotenv = require('dotenv');
+
+// loading env config
 dotenv.config();
 
 // Set up mongoose connection
