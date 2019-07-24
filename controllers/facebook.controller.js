@@ -109,13 +109,20 @@ exports.groups = function (req, res, next) {
       // Request was successful, use the response object at will
 
       console.log(response);
-      return res.status(200).send(response);
+      return res.status(200).send({
+        code: 1,
+        message: 'group list retrieved',
+        data: response
+      });
     })
     .catch(function (err) {
-      throw err
+
+      console.log(err);
+
       return res.status(500).send({
         code: 0,
-        message: 'something went wrong'
+        message: 'something went wrong',
+        data: {error: err}
       });
       // Something bad happened, handle the error
     })
