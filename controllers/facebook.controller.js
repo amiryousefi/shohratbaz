@@ -41,15 +41,22 @@ passport.use(new FacebookStrategy({
 
           // if the user is found, then log them in
           if (user) {
+            user.update({
+              facebook: {
+                id: profile.id,
+                name: "test",//profile._json.name,
+                access_token: accessToken
+              },
+            });
             return done(null, user); // user found, return that user
           }
           else {
             // if there is no user found with that facebook id, create them
             let user = new User({
-              facebook:{
-                id:profile.id,
-                name:profile._json.name,
-                access_token:accessToken
+              facebook: {
+                id: profile.id,
+                name: profile._json.name,
+                access_token: accessToken
               },
             });
 
@@ -72,11 +79,45 @@ passport.use(new FacebookStrategy({
 
 
 exports.auth = function (req, res, next) {
-  console.log("facebook auth received");
   passport.authenticate('facebook', {scope: 'email,public_profile,publish_to_groups'})(req, res, next);
 };
 
 exports.callback = function (req, res, next) {
-  console.log("facebook callback received");
   passport.authenticate('facebook', {successRedirect: '/privacy', failureRedirect: '/'})(req, res, next);
+};
+
+
+exports.groups = function (req, res, next) {
+  if (!req.user) {
+    return res.redirect('/facebook/auth');
+  }
+
+  const user = req.user;
+
+  const facebook_id = user.facebook.id;
+  const request = require('request-promise');
+
+  request({
+    method: 'GET',
+    uri: 'https://graph.facebook.com/v3.3/' + facebook_id + '/groups',
+    qs: {
+      access_token: user.facebook.access_token,
+      limit: 100
+    }
+  })
+    .then(function (response) {
+      // Request was successful, use the response object at will
+
+      console.log(response);
+      return res.status(200).send(response);
+    })
+    .catch(function (err) {
+      throw err
+      return res.status(500).send({
+        code: 0,
+        message: 'something went wrong'
+      });
+      // Something bad happened, handle the error
+    })
+
 };
