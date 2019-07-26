@@ -112,7 +112,7 @@ exports.groups = function (req, res, next) {
       return res.status(200).send({
         code: 1,
         message: 'group list retrieved',
-        data: response
+        data: JSON.parse(response)
       });
     })
     .catch(function (err) {
