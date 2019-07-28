@@ -8,6 +8,7 @@ const logger = require('morgan');
 const passport = require('passport');
 const dotenv = require('dotenv');
 
+
 // loading env config
 dotenv.config();
 
@@ -15,7 +16,7 @@ dotenv.config();
 const mongoose = require('mongoose');
 
 const mongoDB = process.env.MONGODB_URI;
-mongoose.connect(mongoDB);
+mongoose.connect(mongoDB, {useNewUrlParser: true});
 mongoose.Promise = global.Promise;
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
@@ -25,6 +26,8 @@ const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const privacyRouter = require('./routes/privacy');
 const facebookRouter = require('./routes/facebook');
+const shareableRouter = require('./routes/shareable');
+const sharedRouter = require('./routes/shared');
 
 const app = express();
 
@@ -48,6 +51,8 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/privacy', privacyRouter);
 app.use('/facebook', facebookRouter);
+app.use('/shareable', shareableRouter);
+app.use('/shared', sharedRouter);
 
 
 // catch 404 and forward to error handler

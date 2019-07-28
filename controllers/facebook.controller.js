@@ -1,4 +1,4 @@
-const User = require('../models/user.model');
+const User = require('../models/User.model');
 
 const passport = require('passport')
   , FacebookStrategy = require('passport-facebook').Strategy
@@ -41,10 +41,12 @@ passport.use(new FacebookStrategy({
 
           // if the user is found, then log them in
           if (user) {
+            // TODO:: make the update function right
+            console.log("UPDATE");
             user.update({
               facebook: {
                 id: profile.id,
-                name: "test",//profile._json.name,
+                name: "test",
                 access_token: accessToken
               },
             });
@@ -83,7 +85,7 @@ exports.auth = function (req, res, next) {
 };
 
 exports.callback = function (req, res, next) {
-  passport.authenticate('facebook', {successRedirect: '/privacy', failureRedirect: '/'})(req, res, next);
+  passport.authenticate('facebook', {successRedirect: '/', failureRedirect: '/'})(req, res, next);
 };
 
 

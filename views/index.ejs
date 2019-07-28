@@ -1,12 +1,279 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-  <a href="/facebook/auth">Auth on Facebook</a>
-  </body>
+<head>
+    <title>Shohratbaz(Fame Addict)</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/css/select2.min.css" rel="stylesheet"/>
+    <link rel='stylesheet' href='/stylesheets/jquery.datetimepicker.min.css'/>
+    <link rel='stylesheet' href='/stylesheets/style.css'/>
+    <script src="https://kit.fontawesome.com/36a538e122.js"></script>
+</head>
+<body>
+<div class="row">
+    <!-- Messages -->
+    <div class="col-md-12">
+        <div class="message">
+            <div class="alert alert-dismissible fade show d-none" id="alert-clone" role="alert">
+                <p class="p-0 m-0"></p>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <!-- main section -->
+    <div class="col-lg-6 col-md-12">
+        <!-- share form -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-groups">
+                    <textarea class="form-control" data-urls="" id="what"
+                              placeholder="What do you want to share today"></textarea>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <hr class="mb-1 mt-1">
+                <div class="form-groups">
+                    <select class="fb-groups form-control" id="where" multiple="multiple"></select>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <hr class="mb-1 mt-1">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="when">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-primary btn-block" type="button" id="share">Share!</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-md-12">
+        <!-- shareable management area -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="What do you want to share" id="shareable-url">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-primary" type="button" id="add-shareable"><i
+                                    class="fas fa-plus-square"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12" id="shareable-list">
+                <div class="input-group shareable d-none" id="shareable-clone">
+                    <input type="text" class="form-control shareable-url" data-id="" readonly>
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-danger delete-it" type="button"><i class="fas fa-trash-alt"></i>
+                        </button>
+                        <button class="btn btn-outline-info use-it" type="button"><i
+                                    class="fas fa-share-alt-square"></i></button>
+                        <button class="btn btn-outline-secondary copy-it" type="button"><i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" id="base-url" value="<%= process.env.BASE_URL %>">
+</body>
+<script src="/javascripts/jquery-3.4.1.min.js"></script>
+<script src="/javascripts/clipboard-polyfill.js"></script>
+<script src="/javascripts/jquery.datetimepicker.full.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/js/select2.min.js"></script>
+<script>
+  $(document).ready(function () {
+    let base_url = $("#base-url").val();
+    let fb_groups_data = [];
+
+    $('#when').datetimepicker({
+      minDate: 0,
+      closeOnDateSelect: true,
+    });
+
+    function make_alert(message, class_name) {
+      let alert = $('#alert-clone').clone();
+      alert.removeAttr('id');
+      alert.find('p').html(message);
+      alert.addClass(class_name).removeClass('d-none');
+      $(".message").append(alert);
+    }
+
+    $('#share').on('click', function () {
+      let $when = $('#when');
+      let $what = $('#what');
+      let $where = $('#where');
+
+      let datetime = $when.val();
+
+      let urls = $what.attr('data-urls').split(',').filter(function (url) {
+        return url != '';
+      });
+      urls = [...new Set(urls)];
+
+      let post = $what.val();
+
+      let groups = $where.val();
+
+      console.log({datetime, urls, post, groups});
+
+      $.ajax({
+        url: base_url + 'shared/store',
+        data: {datetime, urls, post, groups},
+        method: "POST",
+        type: "POST",
+        success: function (data) {
+          if (1 === data.code) {
+            make_alert(data.message, 'alert-success');
+          }
+        },
+        error: function (jqXhr, textStatus, errorThrown) {
+          let data = JSON.parse(jqXhr.responseText);
+          console.log(data);
+          make_alert(data.message, 'alert-warning');
+        },
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+    });
+
+    function copy_text(text) {
+      let dt = new clipboard.DT();
+      dt.setData("text/plain", text);
+      clipboard.write(dt);
+    }
+
+    function get_fb_groups() {
+      $.ajax({
+        url: base_url + 'facebook/groups',
+        method: "GET",
+        type: "GET",
+        success: function (data) {
+          if (1 === data.code) {
+            let result = data.data;
+            $.each(result.data, function (index, item) {
+              fb_groups_data.push({id: item.id, text: item.name});
+            });
+
+            $(".fb-groups").select2({
+              data: fb_groups_data,
+              placeholder: 'Where do you like to share?'
+            })
+
+          }
+        },
+        error: function (jqXhr, textStatus, errorThrown) {
+          let data = JSON.parse(jqXhr.responseText);
+          console.log(data);
+          make_alert(data.message, 'alert-warning');
+        },
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+    }
+
+    function generate_shareable_html(url, id) {
+      let shareable = $('#shareable-clone').clone();
+      let shareable_list = $('#shareable-list');
+
+      shareable.removeAttr('id');
+      shareable.find('input').val(url).attr('data-id', id);
+      shareable.removeClass('d-none');
+      shareable_list.prepend(shareable);
+    }
+
+    function get_shareable_list() {
+      $.ajax({
+        url: base_url + 'shareable/get',
+        method: "GET",
+        type: "GET",
+        success: function (data) {
+          if (1 === data.code) {
+            let result = data.data;
+            $.each(result, function (index, item) {
+              generate_shareable_html(item.url, item._id);
+            });
+          }
+        },
+        error: function (jqXhr, textStatus, errorThrown) {
+          let data = JSON.parse(jqXhr.responseText);
+          console.log(data);
+          make_alert(data.message, 'alert-warning');
+        },
+        headers: {
+          'Accept': 'application/json',
+        },
+      })
+    }
+
+    function add_shareable(shareable_url) {
+      $.ajax({
+        url: base_url + 'shareable/store',
+        data: {shareable_url: shareable_url},
+        method: "POST",
+        type: "POST",
+        success: function (data) {
+          if (1 === data.code) {
+            generate_shareable_html(data.data.url);
+            make_alert(data.message, 'alert-success');
+          }
+        },
+        error: function (jqXhr, textStatus, errorThrown) {
+          let data = JSON.parse(jqXhr.responseText);
+          console.log(data);
+          make_alert(data.message, 'alert-warning');
+        },
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+    }
+
+    $('#shareable-url').on('keyup', function (e) {
+      if (e.keyCode === 13) {
+        let shareable_url = $('#shareable-url').val();
+        add_shareable(shareable_url);
+      }
+    });
+
+    $('#add-shareable').on('click', function () {
+      let shareable_url = $('#shareable-url').val();
+      add_shareable(shareable_url);
+    });
+
+    $(document).on('click', '.copy-it', function () {
+      let shareable_url = $(this).parents('.shareable').find('input').val();
+      copy_text(shareable_url);
+    });
+
+
+    $(document).on('click', '.use-it', function () {
+      let shareable = $(this).parents('.shareable').find('input');
+
+      let $what = $('#what');
+      $what.val($what.val() + '\n' + shareable.val());
+
+      $what.attr('data-urls', $what.attr('data-urls') + ',' + shareable.attr('data-id'))
+    });
+
+    get_fb_groups();
+    get_shareable_list();
+
+  });
+</script>
 </html>

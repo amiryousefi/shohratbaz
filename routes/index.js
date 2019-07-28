@@ -4,14 +4,12 @@ var router = express.Router();
 /* GET home page. */
 router.get('/', function(req, res, next) {
   console.log("user", req.user);
-  let title = "";
   if(req.isAuthenticated()){
-    title = "yes";
+    res.render('index');
   }else{
-    title = "no";
+    res.render('facebook_login');
   }
-  console.log("PORT",process.env.PORT);
-  res.render('index', { title: title });
+
 });
 
 module.exports = router;
